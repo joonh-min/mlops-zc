@@ -1,0 +1,35 @@
+version: '3'
+services:
+  magic:
+    command: /app/run_app.sh mage start $PROJECT_NAME
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: mage.dockerfile
+    environment:
+      USER_CODE_PATH: $USER_CODE_PATH
+      ENV: ${ENV}
+    ports:
+      - 6789:6789
+    volumes:
+      - .:/$MAGE_CODE_PATH
+      - .taxi_data:/taxi_data
+    restart: on-failure:5
+    networks:
+      - app-network
+    stdin_open: true # used for interactive debugging
+    tty: true # used for interactive debugging
+  mlflow:
+    build:
+      context: .
+      dockerfile: mlflow.dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - "${PWD}/mlflow:/home/mlflow/"
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
